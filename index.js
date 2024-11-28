@@ -1,33 +1,34 @@
-import express from 'express';
-import { buscarUfs, buscarUfsPorId, buscarUfsPorNome } from './servicos/servicos';
-
+const express = require('express');
+const colecaoUf = require('./dados/dados.js');
 
 const app = express();
 
-
-app.get('/ufs', (req, res) =>{
-    const nomeUf = req.query.busca;
-    const resultado = nomeUf ? buscarUfsPorNome(nomeUf) : buscarUfs();
-    if (resultado.length > 0) {
-    res.json(resultado);
-}   else {
-    res.status(404).send({"erro": "Nenhu UF encontrado"})
-    }
+app.get('/ufs', (req,res) => {
+res.json(colecaoUf)
 });
 
-app.get('/ufs:iduf', (req, res) => {
-    const uf = buscarUfsPorId(req.params.iduf)
-if (uf) {
-    res.json(uf);
-} else if (isNaN(parseInt(req.params.iduf))) {
-    res.status(400).send({"erro" : "Requisicao invalida"});
-} else {
-    res.status(404).send({"erro" : "Uf nao encontrada"});
+app.get('/ufs/:iduf', (req, res) => {
+const idUF = parseInt(req.params.iduf);
+let mensagemErro = '';
+let uf;
+
+if (!(isNaN(idUF))) {
+uf = colecaoUf.colecaoUf.find(u => u.id === idUF);
+if (!uf) {
+mensagemErro = 'UF não encontrada';
 }
+} else {
+mensagemErro = 'Requisição inválida'
+}
+
+if (uf) {
+res.json(uf);
+} else {
+res.status(404).json({ "erro": mensagemErro })
+}
+
 });
 
 app.listen(8080, () => {
-    let data = new Date()
-    console.log("servidorinciado na porta 8080 em"+data);
-    
+console.log('Servirdor iniciado na porta 8080');
 });
